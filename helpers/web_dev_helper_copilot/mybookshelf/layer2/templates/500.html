@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}500 — Server Error{% endblock %}
+{% block header_title %}500 — Something Went Wrong{% endblock %}
+
+{% block content %}
+    <div class="empty-state">
+        <p>💥 An internal error occurred. This is a bug in the server code.</p>
+        <p>Check the terminal running Flask — the error traceback is printed there.</p>
+        <p><a href="{{ url_for('index') }}">Go back to your bookshelf</a></p>
+    </div>
+{% endblock %}

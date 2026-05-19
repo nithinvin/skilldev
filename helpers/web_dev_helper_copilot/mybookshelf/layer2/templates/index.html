@@ -1,0 +1,92 @@
+{# =============================================================================
+   Home Page — Book list with search
+   
+   Q: What does {% extends "base.html" %} do?
+      This template INHERITS the base layout. It only needs to fill in the blocks.
+      Everything outside blocks (header, footer, CSS link) comes from base.html.
+   ============================================================================= #}
+
+{% extends "base.html" %}
+
+{% block title %}MyBookShelf — Your Book Collection{% endblock %}
+
+{% block content %}
+    {# Search form #}
+    <form method="GET" action="{{ url_for('index') }}" class="search-form">
+        {# Q: Why method="GET" for search?
+           GET puts the query in the URL: /?search=python
+           This means:
+           - The search is bookmarkable
+           - You can share the URL
+           - Browser back button works
+           - No "resubmit form?" warning on refresh
+           POST would hide it in the body — wrong for searches. #}
+        <input type="text" name="search" id="search"
+               value="{{ search }}"
+               placeholder="Search by title or author...">
+        <button type="submit">Search</button>
+        {% if search %}
+            <a href="{{ url_for('index') }}" class="clear-search">Clear</a>
+        {% endif %}
+    </form>
+
+    {% if search %}
+        <p class="search-info">
+            Showing {{ books|length }} result{{ 's' if books|length != 1 }} for "{{ search }}"
+            {# Q: What is |length? A Jinja2 FILTER — transforms a value.
+               books|length = len(books) in Python.
+               Other useful filters: |upper, |lower, |default('N/A'), |truncate(50) #}
+        </p>
+    {% endif %}
+
+    {# Book table #}
+    {% if books %}
+    <table id="book-table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Year</th>
+                <th>Rating</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+            <tr>
+                <td data-label="Title">{{ book.title }}</td>
+                <td data-label="Author">{{ book.author }}</td>
+                <td data-label="Year">{{ book.year }}</td>
+                <td data-label="Rating">
+                    {{ '⭐' * book.rating }}{{ '☆' * (5 - book.rating) }}
+                    {# Q: String multiplication in Jinja2!
+                       '⭐' * 3 = '⭐⭐⭐'. Same as Python. #}
+                </td>
+                <td data-label="Actions">
+                    <a href="{{ url_for('edit_book_route', book_id=book.id) }}" 
+                       class="btn btn-edit">Edit</a>
+                    <form method="POST" 
+                          action="{{ url_for('delete_book_route', book_id=book.id) }}"
+                          style="display:inline;"
+                          onsubmit="return confirm('Delete {{ book.title }}?')">
+                        {# Q: Why a form for delete and not just a link?
+                           Links make GET requests. Delete is a state change → must be POST.
+                           A form with method=POST ensures intentional action. #}
+                        <button type="submit" class="btn btn-delete">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <div class="empty-state">
+            <p>📭 No books found.</p>
+            {% if search %}
+                <p>Try a different search or <a href="{{ url_for('index') }}">view all books</a>.</p>
+            {% else %}
+                <p><a href="{{ url_for('add_book_route') }}">Add your first book!</a></p>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}

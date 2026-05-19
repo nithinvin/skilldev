@@ -1,0 +1,73 @@
+{# =============================================================================
+   Level 2.2 — Jinja2 Templates: Base Layout
+   =============================================================================
+
+   QUESTIONS:
+     1. What is template inheritance?
+        A base template defines the STRUCTURE (header, footer, layout).
+        Child templates OVERRIDE specific blocks (content, title).
+        Like OOP inheritance — DRY principle for HTML!
+
+     2. What is {% block %}?
+        A named placeholder that child templates can fill in.
+        {% block content %}{% endblock %} = "put page content here"
+
+     3. What is {{ }}?
+        Output a variable's value (auto-escaped for security!).
+        {{ book.title }} → "Clean Code" (HTML entities escaped)
+
+     4. What is {% %}?
+        Logic/control flow: if, for, block, extends.
+        {% for book in books %} ... {% endfor %}
+
+     5. Why does Jinja2 auto-escape?
+        If book.title = "<script>alert('XSS')</script>"
+        Without escaping: browser executes the script!
+        With auto-escape: displays as literal text. Safe by default.
+   ============================================================================= #}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MyBookShelf{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {# Q: What does url_for('static', filename='...') do?
+       Generates the correct URL for static files.
+       Flask serves files from the /static/ directory automatically.
+       In production, nginx will serve these instead (Layer 4). #}
+</head>
+<body>
+    <header>
+        <h1>📚 {% block header_title %}MyBookShelf{% endblock %}</h1>
+        <nav>
+            <a href="{{ url_for('index') }}">Home</a>
+            <a href="{{ url_for('add_book_route') }}">Add Book</a>
+        </nav>
+    </header>
+
+    {# Flash messages — one-time notifications #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash flash-{{ category }}">
+                        {{ message }}
+                        {# Q: Why is this safe? Jinja2 auto-escapes {{ message }}.
+                           Even if someone tried to inject HTML, it would display as text. #}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2025 MyBookShelf — Layer 2 (Flask + PostgreSQL)</p>
+    </footer>
+</body>
+</html>
