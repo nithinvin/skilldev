@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flexbox Playground — MyBookShelf</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /*
+        =================================================================
+        Level 1.3 — FLEXBOX: The Layout System You'll Use Every Day
+        =================================================================
+
+        Q: What problem does flexbox solve?
+           Before flex: centering, equal-height columns, dynamic spacing = HARD.
+           With flex: one property and it just works.
+
+        Q: What's the mental model?
+           Think of a flex container like a SHELF:
+           - flex-direction: which way items flow (→ or ↓)
+           - justify-content: how items spread ALONG the shelf
+           - align-items: how items align ACROSS the shelf
+           - gap: space between items
+
+        Q: flex container vs flex items?
+           Container = the parent (display: flex)
+           Items = direct children of the container
+           Setting display:flex on a div does NOT affect grandchildren!
+        =================================================================
+        */
+
+        .playground {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .control-group label {
+            font-weight: bold;
+            font-size: 0.8rem;
+            color: #2c3e50;
+            text-transform: uppercase;
+        }
+
+        .control-group select {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .flex-container {
+            display: flex;
+            min-height: 250px;
+            border: 3px dashed #3498db;
+            border-radius: 8px;
+            padding: 10px;
+            transition: all 0.3s ease;
+            /* Q: transition on "all" — ANY property change animates.
+               So when you change flex-direction, items smoothly rearrange! */
+        }
+
+        .flex-item {
+            padding: 20px;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            border-radius: 6px;
+            text-align: center;
+            min-width: 60px;
+            transition: all 0.3s ease;
+        }
+
+        .flex-item:nth-child(1) { background: #e74c3c; }
+        .flex-item:nth-child(2) { background: #2ecc71; }
+        .flex-item:nth-child(3) { background: #3498db; }
+        .flex-item:nth-child(4) { background: #f39c12; }
+        .flex-item:nth-child(5) { background: #9b59b6; }
+
+        .code-display {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin-top: 15px;
+            white-space: pre;
+        }
+
+        .explanation {
+            background: #fff3cd;
+            border-left: 4px solid #f39c12;
+            padding: 12px 15px;
+            margin-top: 15px;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.9rem;
+        }
+
+        .add-remove {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .add-remove button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .btn-add { background: #2ecc71; color: white; }
+        .btn-add:hover { background: #27ae60; }
+        .btn-remove { background: #e74c3c; color: white; }
+        .btn-remove:hover { background: #c0392b; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🧪 Flexbox Playground</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="about.html">About</a>
+            <a href="flexbox-playground.html">Flexbox Lab</a>
+            <a href="js-playground.html">JS Lab</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="playground">
+            <h2>Container Properties</h2>
+            <p style="color:#777; margin-bottom:15px;">
+                Change the dropdowns and watch items rearrange in real time.
+            </p>
+
+            <!-- Controls -->
+            <div class="controls">
+                <div class="control-group">
+                    <label>flex-direction</label>
+                    <select id="ctrl-direction">
+                        <option value="row" selected>row (→)</option>
+                        <option value="row-reverse">row-reverse (←)</option>
+                        <option value="column">column (↓)</option>
+                        <option value="column-reverse">column-reverse (↑)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>justify-content</label>
+                    <select id="ctrl-justify">
+                        <option value="flex-start" selected>flex-start</option>
+                        <option value="flex-end">flex-end</option>
+                        <option value="center">center</option>
+                        <option value="space-between">space-between</option>
+                        <option value="space-around">space-around</option>
+                        <option value="space-evenly">space-evenly</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>align-items</label>
+                    <select id="ctrl-align">
+                        <option value="stretch" selected>stretch</option>
+                        <option value="flex-start">flex-start</option>
+                        <option value="flex-end">flex-end</option>
+                        <option value="center">center</option>
+                        <option value="baseline">baseline</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>flex-wrap</label>
+                    <select id="ctrl-wrap">
+                        <option value="nowrap" selected>nowrap</option>
+                        <option value="wrap">wrap</option>
+                        <option value="wrap-reverse">wrap-reverse</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>gap</label>
+                    <select id="ctrl-gap">
+                        <option value="0px">0px</option>
+                        <option value="5px">5px</option>
+                        <option value="10px" selected>10px</option>
+                        <option value="20px">20px</option>
+                        <option value="40px">40px</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Flex Container (the demo area) -->
+            <div class="flex-container" id="flex-demo">
+                <div class="flex-item">1</div>
+                <div class="flex-item">2</div>
+                <div class="flex-item">3</div>
+            </div>
+
+            <!-- Add/Remove items -->
+            <div class="add-remove">
+                <button class="btn-add" id="btn-add">+ Add Item</button>
+                <button class="btn-remove" id="btn-remove">- Remove Item</button>
+            </div>
+
+            <!-- Live CSS output -->
+            <div class="code-display" id="code-output">
+.container {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: stretch;
+    flex-wrap: nowrap;
+    gap: 10px;
+}</div>
+
+            <!-- Explanation -->
+            <div class="explanation" id="explanation">
+                <strong>Try this:</strong> Set justify-content to "space-between" and then add more items.
+                Notice how the space is distributed EVENLY between items, with first and last items flush to edges.
+            </div>
+        </div>
+
+        <!-- Cheat Sheet -->
+        <div class="playground">
+            <h2>Quick Reference</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Property</th>
+                        <th>Applies To</th>
+                        <th>What It Does</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td data-label="Property"><code>display: flex</code></td>
+                        <td data-label="Applies To">Container</td>
+                        <td data-label="What">Enables flex layout on children</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Property"><code>flex-direction</code></td>
+                        <td data-label="Applies To">Container</td>
+                        <td data-label="What">Main axis direction (row/column)</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Property"><code>justify-content</code></td>
+                        <td data-label="Applies To">Container</td>
+                        <td data-label="What">Distribute space along MAIN axis</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Property"><code>align-items</code></td>
+                        <td data-label="Applies To">Container</td>
+                        <td data-label="What">Align items along CROSS axis</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Property"><code>flex-wrap</code></td>
+                        <td data-label="Applies To">Container</td>
+                        <td data-label="What">Allow items to wrap to next line</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Property"><code>gap</code></td>
+                        <td data-label="Applies To">Container</td>
+                        <td data-label="What">Space between items (no margin hacks!)</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Property"><code>flex-grow</code></td>
+                        <td data-label="Applies To">Item</td>
+                        <td data-label="What">How much extra space to absorb (0=none)</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Property"><code>flex-shrink</code></td>
+                        <td data-label="Applies To">Item</td>
+                        <td data-label="What">How much to shrink if space is tight</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Property"><code>align-self</code></td>
+                        <td data-label="Applies To">Item</td>
+                        <td data-label="What">Override align-items for one item</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 MyBookShelf. <a href="index.html">Back to books</a></p>
+    </footer>
+
+    <script>
+        // =================================================================
+        // FLEXBOX PLAYGROUND INTERACTIVITY
+        // =================================================================
+
+        const flexDemo = document.getElementById("flex-demo");
+        const codeOutput = document.getElementById("code-output");
+        const explanation = document.getElementById("explanation");
+
+        const controls = {
+            direction: document.getElementById("ctrl-direction"),
+            justify: document.getElementById("ctrl-justify"),
+            align: document.getElementById("ctrl-align"),
+            wrap: document.getElementById("ctrl-wrap"),
+            gap: document.getElementById("ctrl-gap"),
+        };
+
+        let itemCount = 3;
+
+        // Q: What pattern is this? Event delegation on related controls.
+        // Instead of separate handlers for each dropdown, one function updates all.
+        function updateFlex() {
+            const dir = controls.direction.value;
+            const justify = controls.justify.value;
+            const align = controls.align.value;
+            const wrap = controls.wrap.value;
+            const gap = controls.gap.value;
+
+            // Apply styles directly to the flex container
+            flexDemo.style.flexDirection = dir;
+            flexDemo.style.justifyContent = justify;
+            flexDemo.style.alignItems = align;
+            flexDemo.style.flexWrap = wrap;
+            flexDemo.style.gap = gap;
+
+            // Update code display
+            codeOutput.textContent =
+`.container {
+    display: flex;
+    flex-direction: ${dir};
+    justify-content: ${justify};
+    align-items: ${align};
+    flex-wrap: ${wrap};
+    gap: ${gap};
+}`;
+
+            // Update explanation based on current settings
+            updateExplanation(dir, justify, align, wrap);
+        }
+
+        function updateExplanation(dir, justify, align, wrap) {
+            const tips = [];
+
+            if (justify === "center" && align === "center") {
+                tips.push("🎯 <strong>Perfect centering!</strong> justify-content + align-items = center on both axes. This is how you center a div (the internet's oldest question).");
+            }
+            if (dir === "column") {
+                tips.push("↕️ In column mode, the MAIN axis is vertical. So justify-content now controls vertical spacing, and align-items controls horizontal alignment. The axes SWAP!");
+            }
+            if (wrap === "wrap" && itemCount > 3) {
+                tips.push("📦 With wrap enabled, items flow to the next line when they run out of space. Try resizing your browser window!");
+            }
+            if (justify === "space-between") {
+                tips.push("↔️ space-between: First item at start, last item at end, remaining space split equally between items.");
+            }
+            if (justify === "space-evenly") {
+                tips.push("⚖️ space-evenly: Equal space before first item, between items, and after last item.");
+            }
+            if (align === "baseline") {
+                tips.push("📏 baseline: Items align based on their TEXT baseline. Only visible when items have different font sizes or padding.");
+            }
+
+            if (tips.length === 0) {
+                tips.push("💡 Try different combinations! Set justify-content: center and align-items: center to perfectly center items.");
+            }
+
+            explanation.innerHTML = tips.join("<br><br>");
+        }
+
+        // Attach event listeners to all controls
+        Object.values(controls).forEach(select => {
+            select.addEventListener("change", updateFlex);
+        });
+
+        // Add/Remove items
+        document.getElementById("btn-add").addEventListener("click", () => {
+            if (itemCount >= 8) return; // Max 8 items
+            itemCount++;
+            const item = document.createElement("div");
+            item.className = "flex-item";
+            item.textContent = itemCount;
+            flexDemo.appendChild(item);
+            updateFlex();
+        });
+
+        document.getElementById("btn-remove").addEventListener("click", () => {
+            if (itemCount <= 1) return; // Min 1 item
+            flexDemo.removeChild(flexDemo.lastElementChild);
+            itemCount--;
+            updateFlex();
+        });
+
+        // Initialize
+        updateFlex();
+    </script>
+</body>
+</html>

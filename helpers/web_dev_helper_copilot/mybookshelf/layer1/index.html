@@ -1,0 +1,160 @@
+<!--
+=============================================================================
+Level 1.1 — HTML: The Document Tree
+=============================================================================
+
+QUESTIONS (answer these BEFORE looking at this file's structure):
+
+  1. What is HTML? Is it a programming language? Why or why not?
+     - HTML = HyperText Markup Language
+     - NOT a programming language — it has no logic, loops, or variables
+     - It's a MARKUP language: it describes STRUCTURE and MEANING of content
+     - It tells the browser "this is a heading", "this is a paragraph",
+       "this is a link" — not "do this calculation"
+
+  2. What does the browser actually do with this HTML text?
+     - Receives bytes over HTTP (you saw this in Layer 0!)
+     - Decodes bytes → characters (using charset like UTF-8)
+     - Tokenizes: splits into tags, attributes, text nodes
+     - Builds DOM tree: nested structure of elements
+     - Combines with CSS → Render Tree → Layout → Paint → Pixels
+
+  3. What is the DOM? Why is it a tree?
+     - DOM = Document Object Model — the browser's in-memory representation
+     - It's a tree because HTML nests: <html> contains <body> contains <h1>
+     - Trees allow: parent/child traversal, efficient updates, clear hierarchy
+     - JavaScript manipulates the DOM to change what you see
+
+  4. Why semantic tags (<header>, <nav>, <article>) instead of just <div>?
+     - Screen readers use them to navigate (accessibility)
+     - Search engines use them to understand page structure (SEO)
+     - Developers can read the code and understand meaning instantly
+     - <div> says nothing. <nav> says "this is navigation."
+
+  5. Block vs inline elements?
+     - Block: takes full width, starts on new line (div, p, h1, section)
+     - Inline: flows within text, only as wide as content (span, a, strong, em)
+     - You can change this with CSS: display: block/inline/flex/grid
+
+=============================================================================
+
+HOW TO VIEW:
+  Option 1: python3 -m http.server 8080   (then http://localhost:8080)
+  Option 2: Open directly in browser: file:///path/to/this/file
+  Option 3: Use Layer 0's file server: python3 ../layer0/servers/04_http_file_server.py ./
+
+EXPLORE WITH DEVTOOLS:
+  1. Open this page in Chrome/Firefox
+  2. Press F12 → Elements tab
+  3. See the DOM tree — hover elements to highlight them
+  4. Console tab → type: document.querySelector('h1').textContent
+  5. Console → type: document.querySelectorAll('td').length
+
+=============================================================================
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Q: What does viewport meta do? Try removing it and viewing on mobile. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyBookShelf</title>
+    <!-- Q: Why is this link tag in <head> and not <body>?
+         The browser needs to know about CSS BEFORE rendering the body.
+         Otherwise you get a "flash of unstyled content" (FOUC). -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- SEMANTIC HTML: each tag communicates PURPOSE, not just appearance -->
+
+    <!-- <header> = introductory content or navigation for the page -->
+    <header>
+        <h1>📚 MyBookShelf</h1>
+        <!-- <nav> = a section with navigation links -->
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="about.html">About</a>
+            <a href="flexbox-playground.html">Flexbox Lab</a>
+            <a href="js-playground.html">JS Lab</a>
+        </nav>
+    </header>
+
+    <!-- <main> = the dominant content of the page (only one per page) -->
+    <main>
+        <!-- Search input — JS will make this work in Level 1.4 -->
+        <input type="text" id="search" placeholder="Search books... (requires JavaScript)"
+               aria-label="Search books">
+
+        <!-- <section> = a thematic grouping of content -->
+        <section id="book-list">
+            <h2>My Books</h2>
+
+            <!-- Q: Why use <table> and not a bunch of <div>s?
+                 Tables are for TABULAR DATA. Using <div> for tables is
+                 like using a screwdriver to hammer nails — it works but it's wrong.
+                 Screen readers announce table structure to blind users. -->
+            <table>
+                <thead>
+                    <tr>
+                        <!-- Q: What's the difference between <th> and <td>?
+                             <th> = table header (bold, centered by default, semantic meaning)
+                             <td> = table data (normal cell) -->
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Year</th>
+                        <th>Rating</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- data-label attributes are used by CSS for mobile layout (Level 1.3) -->
+                    <tr>
+                        <td data-label="Title">Code: The Hidden Language of Computer Hardware and Software</td>
+                        <td data-label="Author">Charles Petzold</td>
+                        <td data-label="Year">1999</td>
+                        <td data-label="Rating">⭐⭐⭐⭐⭐</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Title">The C Programming Language</td>
+                        <td data-label="Author">Kernighan &amp; Ritchie</td>
+                        <!-- Q: Why &amp; instead of &? 
+                             & is special in HTML (starts entities like &lt;)
+                             To display a literal &, use &amp; -->
+                        <td data-label="Year">1978</td>
+                        <td data-label="Rating">⭐⭐⭐⭐⭐</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Title">Structure and Interpretation of Computer Programs</td>
+                        <td data-label="Author">Abelson &amp; Sussman</td>
+                        <td data-label="Year">1996</td>
+                        <td data-label="Rating">⭐⭐⭐⭐</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Title">Clean Code</td>
+                        <td data-label="Author">Robert C. Martin</td>
+                        <td data-label="Year">2008</td>
+                        <td data-label="Rating">⭐⭐⭐</td>
+                    </tr>
+                    <tr>
+                        <td data-label="Title">Introduction to Algorithms (CLRS)</td>
+                        <td data-label="Author">Cormen, Leiserson, Rivest, Stein</td>
+                        <td data-label="Year">2009</td>
+                        <td data-label="Rating">⭐⭐⭐⭐</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <!-- <footer> = footer for the page or section -->
+    <footer>
+        <p>&copy; 2025 MyBookShelf. Built from scratch, layer by layer.</p>
+    </footer>
+
+    <!-- Q: Why is <script> at the END of <body> and not in <head>?
+         When the browser hits a <script>, it STOPS parsing HTML to execute JS.
+         If JS is in <head>, the DOM isn't built yet → querySelector finds nothing!
+         Putting it at the end means the DOM is ready when JS runs.
+         Alternative: use defer attribute or DOMContentLoaded event. -->
+    <script src="app.js"></script>
+</body>
+</html>

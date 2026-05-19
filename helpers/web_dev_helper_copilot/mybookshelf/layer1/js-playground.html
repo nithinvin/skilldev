@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JS Playground — MyBookShelf</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .demo-section {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .demo-section h2 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #3498db;
+        }
+
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            white-space: pre;
+            margin: 10px 0;
+        }
+
+        .output {
+            background: #1a1a2e;
+            color: #0f0;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            margin: 10px 0;
+            min-height: 40px;
+            white-space: pre-wrap;
+        }
+
+        .run-btn {
+            padding: 8px 16px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .run-btn:hover { background: #2980b9; }
+
+        .note {
+            background: #d4edda;
+            border-left: 4px solid #2ecc71;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.9rem;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #f39c12;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🧪 JavaScript Playground</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="about.html">About</a>
+            <a href="flexbox-playground.html">Flexbox Lab</a>
+            <a href="js-playground.html">JS Lab</a>
+        </nav>
+    </header>
+
+    <main>
+        <!-- ============================================================ -->
+        <!-- DEMO 1: CLOSURES -->
+        <!-- ============================================================ -->
+        <div class="demo-section">
+            <h2>1. Closures</h2>
+            <p>A closure is a function that "remembers" variables from its outer scope, even after the outer function has returned.</p>
+
+            <div class="note">
+                <strong>Why care?</strong> Closures are how JavaScript does data privacy, callbacks, and event handlers. You've already used them without knowing it!
+            </div>
+
+            <div class="code-block">// A counter using closures
+function createCounter(startValue) {
+    let count = startValue;  // ← this variable is "closed over"
+    
+    return {
+        increment() { return ++count; },
+        decrement() { return --count; },
+        getCount()  { return count; }
+    };
+    // After createCounter() returns, `count` should be garbage collected...
+    // But it ISN'T! The returned functions still reference it.
+    // That's a closure.
+}
+
+const counter = createCounter(0);
+console.log(counter.increment()); // 1
+console.log(counter.increment()); // 2
+console.log(counter.decrement()); // 1
+// Can you access `count` directly? NO! It's private.
+// console.log(count); ← ReferenceError</div>
+
+            <button class="run-btn" onclick="runClosureDemo()">Run Demo</button>
+            <div class="output" id="closure-output"></div>
+
+            <div class="warning">
+                <strong>Break It:</strong> What happens if you call createCounter() twice? Do the two counters share state or have independent state? Click "Run" to find out!
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- DEMO 2: PROMISES & ASYNC/AWAIT -->
+        <!-- ============================================================ -->
+        <div class="demo-section">
+            <h2>2. Promises & Async/Await</h2>
+            <p>Promises represent a value that might not exist YET but will in the future (or will fail).</p>
+
+            <div class="note">
+                <strong>Analogy:</strong> A promise is like ordering food at a restaurant.
+                You get a receipt (the promise). The food isn't ready yet, but the receipt
+                guarantees you'll either get food (.then) or an apology (.catch).
+            </div>
+
+            <div class="code-block">// Simulating a network request with setTimeout
+function fetchBook(id) {
+    return new Promise((resolve, reject) => {
+        console.log(`Fetching book ${id}...`);
+        
+        setTimeout(() => {
+            if (id > 0) {
+                resolve({ id, title: "Async Book", author: "Promise" });
+            } else {
+                reject(new Error("Invalid ID!"));
+            }
+        }, 1000); // Simulates 1 second network delay
+    });
+}
+
+// Using .then/.catch (old way):
+fetchBook(1)
+    .then(book => console.log("Got:", book.title))
+    .catch(err => console.error("Error:", err.message));
+
+// Using async/await (modern way — same thing, cleaner syntax):
+async function getBook() {
+    try {
+        const book = await fetchBook(1);
+        console.log("Got:", book.title);
+    } catch (err) {
+        console.error("Error:", err.message);
+    }
+}</div>
+
+            <button class="run-btn" onclick="runPromiseDemo()">Run Demo (watch the timing!)</button>
+            <div class="output" id="promise-output"></div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- DEMO 3: EVENT LOOP -->
+        <!-- ============================================================ -->
+        <div class="demo-section">
+            <h2>3. The Event Loop</h2>
+            <p>JavaScript is <strong>single-threaded</strong> but non-blocking. The event loop is HOW.</p>
+
+            <div class="note">
+                <strong>Mental model:</strong><br>
+                1. <strong>Call Stack</strong> — currently executing code (one thing at a time)<br>
+                2. <strong>Web APIs</strong> — browser handles timers, network, DOM events in background<br>
+                3. <strong>Callback Queue</strong> — completed callbacks waiting to run<br>
+                4. <strong>Microtask Queue</strong> — Promises (.then callbacks) — higher priority than callback queue!<br>
+                5. <strong>Event Loop</strong> — moves tasks from queues → call stack when stack is empty
+            </div>
+
+            <div class="code-block">// PREDICT the order before running!
+console.log("1: Start");
+
+setTimeout(() => {
+    console.log("2: setTimeout callback");
+}, 0);  // 0ms delay — but still goes to callback queue!
+
+Promise.resolve().then(() => {
+    console.log("3: Promise.then (microtask)");
+});
+
+console.log("4: End");
+
+// Expected output: 1, 4, 3, 2
+// WHY?
+// "Start" and "End" run immediately (call stack)
+// Promise.then → microtask queue (higher priority)
+// setTimeout → callback queue (lower priority)
+// Event loop: drain microtasks FIRST, then callbacks</div>
+
+            <button class="run-btn" onclick="runEventLoopDemo()">Run Demo</button>
+            <div class="output" id="eventloop-output"></div>
+
+            <div class="warning">
+                <strong>Key Insight:</strong> setTimeout(fn, 0) does NOT mean "run immediately."
+                It means "run as soon as the call stack AND microtask queue are empty."
+                That's why Promise.then runs before setTimeout even with 0ms delay!
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- DEMO 4: SCOPE & HOISTING -->
+        <!-- ============================================================ -->
+        <div class="demo-section">
+            <h2>4. Scope & Hoisting</h2>
+            <p>Understanding where variables "live" and when they become available.</p>
+
+            <div class="code-block">// var is HOISTED (declaration moves to top, value stays)
+console.log(x); // undefined (not error! var is hoisted)
+var x = 5;
+
+// let/const are NOT hoisted (well, they are, but in a "temporal dead zone")
+// console.log(y); ← ReferenceError: Cannot access 'y' before initialization
+let y = 10;
+
+// Scope difference:
+function scopeDemo() {
+    if (true) {
+        var varScoped = "I escape the if block!";
+        let letScoped = "I'm trapped in the if block.";
+    }
+    console.log(varScoped);  // Works! var is function-scoped
+    // console.log(letScoped); ← ReferenceError: let is block-scoped
+}
+
+// Classic interview question: the loop problem
+for (var i = 0; i < 3; i++) {
+    setTimeout(() => console.log("var i:", i), 100);
+}
+// Prints: 3, 3, 3 (NOT 0, 1, 2!) — because var is shared across iterations
+
+for (let j = 0; j < 3; j++) {
+    setTimeout(() => console.log("let j:", j), 100);
+}
+// Prints: 0, 1, 2 — because let creates a NEW variable per iteration</div>
+
+            <button class="run-btn" onclick="runScopeDemo()">Run Demo</button>
+            <div class="output" id="scope-output"></div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- DEMO 5: ARRAY METHODS -->
+        <!-- ============================================================ -->
+        <div class="demo-section">
+            <h2>5. Array Methods (map, filter, reduce)</h2>
+            <p>Functional programming basics — transform data without loops.</p>
+
+            <div class="code-block">const books = [
+    { title: "Clean Code", year: 2008, pages: 431 },
+    { title: "SICP", year: 1996, pages: 657 },
+    { title: "You Don't Know JS", year: 2014, pages: 278 },
+    { title: "Design Patterns", year: 1994, pages: 395 },
+];
+
+// FILTER: keep only items matching a condition
+const modern = books.filter(b => b.year >= 2000);
+// → [Clean Code, You Don't Know JS]
+
+// MAP: transform each item into something else
+const titles = books.map(b => b.title);
+// → ["Clean Code", "SICP", "You Don't Know JS", "Design Patterns"]
+
+// REDUCE: collapse array into a single value
+const totalPages = books.reduce((sum, b) => sum + b.pages, 0);
+// → 1761
+
+// CHAIN them! Get total pages of books after year 2000:
+const modernPages = books
+    .filter(b => b.year >= 2000)
+    .reduce((sum, b) => sum + b.pages, 0);
+// → 709</div>
+
+            <button class="run-btn" onclick="runArrayDemo()">Run Demo</button>
+            <div class="output" id="array-output"></div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 MyBookShelf. <a href="index.html">Back to books</a></p>
+    </footer>
+
+    <script>
+        // Helper: capture console.log output into a DOM element
+        function captureOutput(elementId, fn) {
+            const el = document.getElementById(elementId);
+            const logs = [];
+            const originalLog = console.log;
+
+            console.log = (...args) => {
+                logs.push(args.join(" "));
+                originalLog.apply(console, args);
+            };
+
+            try {
+                const result = fn();
+                // Handle async functions
+                if (result instanceof Promise) {
+                    result.then(() => {
+                        el.textContent = logs.join("\n");
+                        console.log = originalLog;
+                    });
+                    // Show intermediate output
+                    setTimeout(() => { el.textContent = logs.join("\n"); }, 50);
+                    setTimeout(() => { el.textContent = logs.join("\n"); }, 1100);
+                } else {
+                    el.textContent = logs.join("\n");
+                    console.log = originalLog;
+                }
+            } catch (e) {
+                logs.push(`Error: ${e.message}`);
+                el.textContent = logs.join("\n");
+                console.log = originalLog;
+            }
+        }
+
+        // === DEMO 1: Closures ===
+        function runClosureDemo() {
+            captureOutput("closure-output", () => {
+                function createCounter(startValue) {
+                    let count = startValue;
+                    return {
+                        increment() { return ++count; },
+                        decrement() { return --count; },
+                        getCount()  { return count; }
+                    };
+                }
+
+                const counterA = createCounter(0);
+                const counterB = createCounter(100);
+
+                console.log("Counter A: increment →", counterA.increment());
+                console.log("Counter A: increment →", counterA.increment());
+                console.log("Counter A: increment →", counterA.increment());
+                console.log("Counter B: increment →", counterB.increment());
+                console.log("Counter B: decrement →", counterB.decrement());
+                console.log("");
+                console.log("A and B are INDEPENDENT! Each has its own `count`.");
+                console.log("Counter A:", counterA.getCount(), "| Counter B:", counterB.getCount());
+                console.log("");
+                console.log("Can you access `count` directly? NO → it's private!");
+                console.log("This is the MODULE pattern — closures for encapsulation.");
+            });
+        }
+
+        // === DEMO 2: Promises ===
+        function runPromiseDemo() {
+            captureOutput("promise-output", () => {
+                function fetchBook(id) {
+                    return new Promise((resolve, reject) => {
+                        console.log(`⏳ Fetching book ${id}... (1 second delay)`);
+                        setTimeout(() => {
+                            if (id > 0) {
+                                resolve({ id, title: "The Async Book", author: "Promise" });
+                            } else {
+                                reject(new Error("Invalid ID!"));
+                            }
+                        }, 1000);
+                    });
+                }
+
+                async function demo() {
+                    try {
+                        console.log("▶ Starting async request...");
+                        const book = await fetchBook(1);
+                        console.log(`✅ Got: "${book.title}" by ${book.author}`);
+                        console.log("");
+                        console.log("Now trying invalid ID...");
+                        const bad = await fetchBook(-1);
+                    } catch (err) {
+                        console.log(`❌ Caught error: ${err.message}`);
+                        console.log("   (This is why we use try/catch with await!)");
+                    }
+                }
+
+                return demo();
+            });
+        }
+
+        // === DEMO 3: Event Loop ===
+        function runEventLoopDemo() {
+            const el = document.getElementById("eventloop-output");
+            const logs = [];
+
+            function log(msg) {
+                logs.push(msg);
+                el.textContent = logs.join("\n");
+            }
+
+            logs.length = 0;
+            log("▶ Executing code...");
+            log("");
+
+            log("1: Start (synchronous — runs first)");
+
+            setTimeout(() => {
+                log("2: setTimeout 0ms (callback queue — runs LAST!)");
+                log("");
+                log("📋 Final order: 1 → 4 → 3 → 2");
+                log("   Sync first, then microtasks, then macrotasks.");
+            }, 0);
+
+            Promise.resolve().then(() => {
+                log("3: Promise.then (microtask queue — runs before setTimeout!)");
+            });
+
+            log("4: End (synchronous — runs before any async)");
+            log("");
+            log("⏳ Waiting for async callbacks...");
+        }
+
+        // === DEMO 4: Scope ===
+        function runScopeDemo() {
+            captureOutput("scope-output", () => {
+                console.log("=== var vs let in loops ===");
+                console.log("");
+
+                // var loop
+                console.log("for (var i = 0; i < 3; i++) setTimeout(log i)");
+                const varResults = [];
+                for (var i = 0; i < 3; i++) {
+                    varResults.push(i); // Capture at loop time for comparison
+                }
+                console.log("  var i after loop:", i, "(leaked out!)");
+                console.log("  setTimeout would print: 3, 3, 3 (all see final value)");
+                console.log("");
+
+                // let loop
+                console.log("for (let j = 0; j < 3; j++) setTimeout(log j)");
+                console.log("  let j after loop: ReferenceError (block-scoped!)");
+                console.log("  setTimeout would print: 0, 1, 2 (each iteration has own j)");
+                console.log("");
+
+                // Hoisting
+                console.log("=== Hoisting ===");
+                console.log("console.log(x); var x = 5;  → undefined (hoisted, not initialized)");
+                console.log("console.log(y); let y = 5;  → ReferenceError (temporal dead zone)");
+                console.log("");
+                console.log("Lesson: ALWAYS use const (or let). Never var.");
+            });
+        }
+
+        // === DEMO 5: Array Methods ===
+        function runArrayDemo() {
+            captureOutput("array-output", () => {
+                const books = [
+                    { title: "Clean Code", year: 2008, pages: 431 },
+                    { title: "SICP", year: 1996, pages: 657 },
+                    { title: "You Don't Know JS", year: 2014, pages: 278 },
+                    { title: "Design Patterns", year: 1994, pages: 395 },
+                ];
+
+                console.log("Books:", books.map(b => b.title).join(", "));
+                console.log("");
+
+                // Filter
+                const modern = books.filter(b => b.year >= 2000);
+                console.log("FILTER (year >= 2000):", modern.map(b => b.title).join(", "));
+
+                // Map
+                const summaries = books.map(b => `${b.title} (${b.year})`);
+                console.log("MAP (title + year):", summaries.join(", "));
+
+                // Reduce
+                const totalPages = books.reduce((sum, b) => sum + b.pages, 0);
+                console.log("REDUCE (total pages):", totalPages);
+
+                // Chaining
+                console.log("");
+                console.log("=== Chaining ===");
+                const result = books
+                    .filter(b => b.year >= 2000)
+                    .map(b => `${b.title}: ${b.pages}p`)
+                    .join(" + ");
+                console.log("Modern books:", result);
+
+                const modernPages = books
+                    .filter(b => b.year >= 2000)
+                    .reduce((sum, b) => sum + b.pages, 0);
+                console.log("Total modern pages:", modernPages);
+            });
+        }
+    </script>
+</body>
+</html>

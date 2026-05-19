@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About — MyBookShelf</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>📚 About MyBookShelf</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="about.html">About</a>
+            <a href="flexbox-playground.html">Flexbox Lab</a>
+            <a href="js-playground.html">JS Lab</a>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <h2>What is this?</h2>
+            <p>
+                MyBookShelf is a learning project built <strong>layer by layer</strong>,
+                from raw TCP sockets to a full-stack deployed application.
+            </p>
+
+            <h2>The Layers</h2>
+            <!-- Q: <ol> vs <ul>?
+                 <ol> = ordered list (numbers) — use when ORDER matters
+                 <ul> = unordered list (bullets) — use when order doesn't matter
+                 Here, layers ARE ordered, so <ol> is correct. -->
+            <ol>
+                <li><strong>Layer 0</strong> — Linux, networking, raw sockets <em>(completed!)</em></li>
+                <li><strong>Layer 1</strong> — HTML, CSS, JavaScript <em>(you are here)</em></li>
+                <li><strong>Layer 2</strong> — Backend server + PostgreSQL database</li>
+                <li><strong>Layer 3</strong> — REST API, authentication, authorization</li>
+                <li><strong>Layer 4</strong> — Docker, CI/CD, monitoring</li>
+                <li><strong>Layer 5</strong> — Cloud deployment, microservices</li>
+                <li><strong>Layer 6</strong> — Cryptography &amp; security</li>
+                <li><strong>Layer 7</strong> — Machine learning, LLMs, MCP</li>
+                <li><strong>Layer 8</strong> — Data analytics &amp; dashboards</li>
+            </ol>
+
+            <h2>Technology Stack</h2>
+            <!-- Q: What's a <dl>? Definition list — term + definition pairs -->
+            <dl>
+                <dt>Frontend</dt>
+                <dd>HTML, CSS, JavaScript (no frameworks — understand the fundamentals first)</dd>
+
+                <dt>Backend</dt>
+                <dd>Python (Flask/FastAPI) — because you already know Python</dd>
+
+                <dt>Database</dt>
+                <dd>PostgreSQL (relational) + Redis (cache)</dd>
+
+                <dt>Infrastructure</dt>
+                <dd>Docker, nginx, GitHub Actions CI/CD</dd>
+
+                <dt>Deployed on</dt>
+                <dd>Hetzner Cloud (Ubuntu VM)</dd>
+            </dl>
+
+            <h2>Design Philosophy</h2>
+            <blockquote>
+                <!-- Q: <blockquote> vs <q>?
+                     <blockquote> = long block quote (indented by default)
+                     <q> = short inline quote (browser adds quotation marks) -->
+                <p>"I hear and I forget. I see and I remember. I do and I understand."</p>
+                <footer>— Confucius (paraphrased)</footer>
+            </blockquote>
+            <p>
+                Every layer builds something <strong>real and runnable</strong>.
+                No theoretical exercises without code. No code without understanding.
+            </p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 MyBookShelf. <a href="index.html">Back to books</a></p>
+    </footer>
+</body>
+</html>
