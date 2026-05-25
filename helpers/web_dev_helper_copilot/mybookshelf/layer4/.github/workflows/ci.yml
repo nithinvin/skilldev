@@ -1,0 +1,133 @@
+# =============================================================================
+# Level 4.4 — GitHub Actions CI/CD Pipeline
+# =============================================================================
+#
+# QUESTIONS:
+#   1. What is CI/CD?
+#      CI = Continuous Integration: auto-test every push (catch bugs early)
+#      CD = Continuous Deployment: auto-deploy if tests pass (ship fast)
+#
+#   2. What triggers this pipeline?
+#      push: to main branch → run full pipeline
+#      pull_request: to main → run tests (don't deploy yet)
+#
+#   3. What is a "job"? What is a "step"?
+#      Job = isolated unit of work (runs on a fresh VM)
+#      Step = individual command within a job
+#      Jobs can depend on each other (build needs test to pass)
+#
+#   4. What are "services" in GitHub Actions?
+#      Docker containers running alongside your job (like docker-compose).
+#      We start PostgreSQL as a service so tests can use a real DB.
+#
+# =============================================================================
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # === JOB 1: Lint + Test ===
+  test:
+    runs-on: ubuntu-latest
+    # Q: What is ubuntu-latest? A fresh VM GitHub provides for free.
+    # Every job starts from scratch (no leftover state from previous runs).
+
+    services:
+      # Real PostgreSQL for integration tests
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+        # Q: What does this do? Clones your repo into the VM.
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          # Q: cache: pip — caches downloaded packages between runs.
+          # First run: downloads packages (~30s). Subsequent: uses cache (~3s).
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-cov flake8
+
+      - name: Lint (code style)
+        run: flake8 --max-line-length=120 --exclude=venv,__pycache__ .
+        # Q: What does flake8 check?
+        # PEP 8 style: line length, unused imports, undefined variables, etc.
+        # Catches bugs like: using a variable before defining it.
+
+      - name: Run tests
+        env:
+          DATABASE_URL: postgresql://test_user:test_pass@localhost/test_db
+          SECRET_KEY: test-secret
+        run: |
+          pytest tests/ -v --cov=. --cov-report=term-missing
+          # Q: --cov = measure code coverage (what % of lines are tested?)
+          # --cov-report=term-missing = show which lines have NO tests
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: htmlcov/
+
+  # === JOB 2: Build Docker Image ===
+  build:
+    needs: test
+    # Q: What does "needs: test" mean?
+    # This job only runs IF the test job passes.
+    # Failed tests → build never starts → bad code never gets packaged.
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    # Only build on main branch (not on PR branches)
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build -t mybookshelf:${{ github.sha }} .
+          docker build -t mybookshelf:latest .
+          # Q: Why tag with commit SHA?
+          # Every build gets a unique tag. You can always roll back to a specific commit.
+          # "latest" is also tagged for convenience.
+
+      - name: Test Docker image starts
+        run: |
+          docker run -d --name test-container -p 5000:5000 \
+            -e SECRET_KEY=test \
+            mybookshelf:latest
+          sleep 5
+          curl -f http://localhost:5000/health || exit 1
+          docker stop test-container
+          # Q: Why test after building?
+          # A successful build doesn't mean the app runs!
+          # This catches: missing env vars, import errors, port conflicts.
+
+      # In production: push to Docker Hub or GitHub Container Registry
+      # - name: Push to registry
+      #   run: |
+      #     echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+      #     docker push mybookshelf:${{ github.sha }}
+      #     docker push mybookshelf:latest

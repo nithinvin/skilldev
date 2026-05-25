@@ -1,0 +1,112 @@
+# =============================================================================
+# Level 4.3 — Docker Compose: Multi-Container Setup
+# =============================================================================
+#
+# QUESTIONS:
+#   1. Why separate containers for app, DB, and Redis?
+#      - Single Responsibility: each container does ONE thing
+#      - Independent scaling: 3 app containers, 1 DB container
+#      - Independent updates: upgrade PostgreSQL without touching app
+#      - Isolation: if app crashes, DB keeps running
+#
+#   2. How do containers talk to each other?
+#      Docker Compose creates a network. Containers use SERVICE NAMES as hostnames.
+#      App connects to "db:5432" not "localhost:5432".
+#
+#   3. What is a volume?
+#      Persistent storage that survives container restarts/deletion.
+#      Without volume: docker compose down → all DB data GONE.
+#      With volume: data persists on the host filesystem.
+#
+#   4. What is depends_on + condition: service_healthy?
+#      Start app ONLY after DB is ready to accept connections.
+#      Without it: app starts, DB isn't ready → connection error → crash.
+#
+# RUN:
+#   docker compose up -d
+#   docker compose logs -f
+#   docker compose down
+# =============================================================================
+
+services:
+  # === APPLICATION ===
+  app:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: "postgresql://bookshelf_user:bookshelf_pass@db:5432/mybookshelf"
+      # Q: Why "db" and not "localhost"?
+      # "db" is the service name below. Docker DNS resolves it to the container's IP.
+      REDIS_URL: "redis://redis:6379"
+      SECRET_KEY: "change-this-in-production-use-env-file"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    # Q: restart policies:
+    #   no:             never restart
+    #   always:         restart even if manually stopped
+    #   unless-stopped: restart on crash, not on manual stop
+    #   on-failure:     restart only if exit code != 0
+
+  # === DATABASE ===
+  db:
+    image: postgres:16-alpine
+    # Q: Why alpine? Smaller image (~80MB vs ~400MB). Same PostgreSQL.
+    environment:
+      POSTGRES_USER: bookshelf_user
+      POSTGRES_PASSWORD: bookshelf_pass
+      POSTGRES_DB: mybookshelf
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Q: Named volume "pgdata" persists data.
+      # If you use docker compose down -v, volumes are DELETED (data loss!).
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      # Q: Files in /docker-entrypoint-initdb.d/ run on FIRST start only.
+      # This auto-creates your tables when the DB container is first created.
+    ports:
+      - "5432:5432"
+      # Q: Exposing DB port = useful for development (connect with psql from host).
+      # In production: DON'T expose this! Only app containers should access DB.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bookshelf_user"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # === REDIS (caching, rate limiting, sessions) ===
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    # Q: Redis is an in-memory database. Why persist to disk?
+    # In case of container restart, you don't lose cached data.
+    # For pure cache (expendable data), you can skip the volume.
+
+  # === NGINX (reverse proxy) ===
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      # :ro = read-only mount (nginx shouldn't modify its own config)
+    depends_on:
+      - app
+    restart: unless-stopped
+    # Q: Why nginx in front of the app?
+    # 1. Static file serving (faster than Python)
+    # 2. TLS termination (HTTPS)
+    # 3. Rate limiting
+    # 4. Load balancing (multiple app instances)
+    # 5. Request buffering (protects app from slow clients)
+
+# === NAMED VOLUMES ===
+volumes:
+  pgdata:
+  redisdata:

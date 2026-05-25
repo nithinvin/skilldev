@@ -1,0 +1,16 @@
+# Docker ignore — don't copy these into the image
+# Q: Why? Smaller image, faster builds, no secrets in images.
+
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.gitignore
+.env
+*.md
+tests/
+.github/
+.pytest_cache/
+htmlcov/
+*.egg-info/
