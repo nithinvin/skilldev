@@ -1,0 +1,5 @@
+config_version=3
+database_host=localhost
+database_port=5432
+app_mode=production
+log_level=info

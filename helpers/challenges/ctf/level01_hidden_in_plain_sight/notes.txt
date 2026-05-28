@@ -1,0 +1,13 @@
+Project Notes
+=============
+
+Meeting with the team on Tuesday.
+Remember to update the deployment scripts.
+The new API endpoint is /api/v2/books.
+
+TODO:
+- Fix the CSS bug on mobile
+- Update requirements.txt
+- Review PR #42
+
+Nothing interesting here. Move along.

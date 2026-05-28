@@ -1,0 +1,19 @@
+# Format: username:algorithm:hash[:salt]
+# Your job: crack these passwords using the provided wordlist
+
+# User 1 — MD5 (the weakest, fastest to crack)
+agent_x:md5:5f4dcc3b5aa765d61d8327deb882cf99
+
+# User 2 — SHA-256 (stronger, but still vulnerable to dictionary attack)
+agent_y:sha256:ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f
+
+# User 3 — SHA-256 with SALT (same password as agent_y, but salted!)
+agent_z:sha256_salted:a3f5b6c8d2e1f9a0b4c7d8e2f1a0b3c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1:pepper2024
+
+# Note on agent_z: The salt "pepper2024" is prepended to the password before hashing.
+# Even if you know the password, the hash is completely different with a salt!
+# The "cracked" password is: password123 (same as agent_y)
+# Hash = sha256("pepper2024" + "password123")
+
+# BONUS: This is bcrypt — try cracking it (spoiler: it's intentionally slow)
+admin:bcrypt:$2b$12$LJ3m4sMKfJzN0VqGHR1bJuBNPOdL7E5S0cK7rC8pE.QdG3GhAZXxe
